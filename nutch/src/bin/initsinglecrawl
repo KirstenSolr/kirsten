@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Activates single crawl as a background process bu appending URL to file with queued URLs
+#
+
+URL="$1"
+CRAWL_PATH="$2"
+
+if [ "$URL" = "" ]; then
+    echo "Missing url : initsinglecrawl <url> <crawlDir>"
+	exit -1;
+fi
+
+if [ "$CRAWL_PATH" = "" ]; then
+    echo "Missing crawlDir : initsinglecrawl <url> <crawlDir>"
+    exit -1;
+fi
+
+echo $URL >> $CRAWL_PATH/queue/waiting/urls.txt

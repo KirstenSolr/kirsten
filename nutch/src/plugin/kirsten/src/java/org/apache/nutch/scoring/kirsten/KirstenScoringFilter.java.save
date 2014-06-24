@@ -1,0 +1,195 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.nutch.scoring.kirsten;
+
+import java.util.Collection;
+import java.util.Map.Entry;
+import java.util.Iterator;
+import java.util.List;
+mysql-connector-java.jar
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.io.Text;
+import org.apache.nutch.crawl.CrawlDatum;
+import org.apache.nutch.crawl.Inlinks;
+import org.apache.nutch.indexer.NutchDocument;
+import org.apache.nutch.parse.Parse;
+import org.apache.nutch.parse.ParseData;
+import org.apache.nutch.protocol.Content;
+import org.apache.nutch.scoring.ScoringFilter;
+import org.apache.nutch.scoring.ScoringFilterException;
+
+/**
+ * For documentation:
+ * 
+ * @see KirstenIndexingFilter
+ */
+public class KirstenScoringFilter implements ScoringFilter {
+
+  private static final Logger LOG = LoggerFactory.getLogger(KirstenScoringFilter.class);
+  private static final String CONF_URL = "kirsten.db.url";
+  private static final String CONF_DB = "kirsten.db.dbname";
+  private static final String CONF_USERNAME = "kirsten.db.username";
+  private static final String CONF_PASSWORD = "kirsten.db.password";
+  private static String[] urlMetaTags;
+  private Configuration conf;
+  private Connection connect = null;
+  private Statement statement = null;
+  private ResultSet resultSet = null;
+
+  public Configuration getConf() {
+    return conf;
+  }
+
+  public void setConf(Configuration conf) {
+    this.conf = conf;
+    /* normalizedScore = conf.getFloat("link.analyze.normalize.score", 1.00f); */
+  }
+
+
+  /**
+   * 
+   * @see ScoringFilter#updateDbScore
+   */
+
+  /** Increase the score by a sum of inlinked scores. */
+  public void updateDbScore(Text url, CrawlDatum old, CrawlDatum datum, List inlinked)
+    throws ScoringFilterException {
+    // float adjust = 0.0f;
+    // datum.setScore(old.getScore() + adjust);
+  }
+
+  /**
+   * Takes the metadata, specified in your "urlmeta.tags" property, from the
+   * datum object and injects it into the content. This is transfered to the
+   * parseData object.
+   * 
+   * @see ScoringFilter#passScoreBeforeParsing
+   * @see URLMetaScoringFilter#passScoreAfterParsing
+   */
+  public void passScoreBeforeParsing(Text url, CrawlDatum datum, Content content) {
+    // String urlString = url.toString();
+    // LOG.info("passScoreBeforeParsing Url: " + urlString);
+  }
+
+  /**
+   * Takes the metadata, which was lumped inside the content, and replicates it
+   * within your parse data.
+   * 
+   * @see URLMetaScoringFilter#passScoreBeforeParsing
+   * @see ScoringFilter#passScoreAfterParsing
+   */
+  public void passScoreAfterParsing(Text url, Content content, Parse parse) {
+    // String urlString = url.toString();
+    // LOG.info("passScoreAfterParsing Url: " + urlString);
+  }
+
+  /** Boilerplate */
+  public float generatorSortValue(Text url, CrawlDatum datum, float initSort)
+      throws ScoringFilterException {
+    return initSort;
+  }
+
+  /** Boilerplate */
+  public float indexerScore(Text url, NutchDocument doc, CrawlDatum dbDatum,
+      CrawlDatum fetchDatum, Parse parse, Inlinks inlinks, float initScore)
+      throws ScoringFilterException {
+    String urlString = url.toString();
+    String boost = readUrlBoostFromDB(url);
+    LOG.info("indexerScore Url: " + urlString + " initScore: " + String.valueOf(initScore) + 
+      " dbDatum: " + dbDatum +
+      " doc: " + doc +
+      " fetchDatum: " + fetchDatum + 
+      " set boost: " + boost
+    );
+    return initScore;
+  }
+
+  /** Boilerplate */
+  public void initialScore(Text url, CrawlDatum datum)
+      throws ScoringFilterException {
+    return;
+  }
+
+  /** Boilerplate */
+  public void injectedScore(Text url, CrawlDatum datum)
+      throws ScoringFilterException {
+    return;
+  }
+
+  public CrawlDatum distributeScoreToOutlinks(Text fromUrl,
+    ParseData parseData, Collection<Entry<Text, CrawlDatum>> targets,
+    CrawlDatum adjust, int allCount)
+    throws ScoringFilterException {
+    return adjust;
+  }
+
+  public String readUrlBoostFromDB(Text url) {
+    try {
+      // This will load the MySQL driver, each DB has its own driver
+      Class.forName("com.mysql.jdbc.Driver");
+      // Setup the connection with the DB
+      connect = DriverManager
+          .getConnection(CONF_URL + "/" + CONF_DB + "?"
+              + "user=" + CONF_USERNAME + "&password=" + CONF_PASSWORD);
+
+      // Statements allow to issue SQL queries to the database
+      statement = connect.createStatement();
+      // Result set get the result of the SQL query
+      resultSet = statement
+          .executeQuery("select boost from webpages where url = '" + url + "'");
+    } catch (Exception e) {
+      LOG.error("Exception on executeQuery", e);
+    } finally {
+      try {
+        resultSet.next();
+        String boost = resultSet.getString("boost");
+        System.out.println("Boost: " + boost);
+        close();
+        return boost;
+      }
+      catch (SQLException e) {
+        close();
+        return "";
+      }
+    }
+
+  }
+
+  // You need to close the resultSet
+  private void close() {
+    try {
+      if (resultSet != null) {
+        resultSet.close();
+      }
+
+      if (statement != null) {
+        statement.close();
+      }
+
+      if (connect != null) {
+        connect.close();
+      }
+    } catch (Exception e) {
+
+    }
+  }
+}

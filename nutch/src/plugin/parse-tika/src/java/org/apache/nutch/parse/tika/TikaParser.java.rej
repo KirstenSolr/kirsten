@@ -1,0 +1,12 @@
+--- TikaParser.java	(revision 1204027)
++++ TikaParser.java	(working copy)
+@@ -41,7 +41,9 @@
+ import org.apache.tika.metadata.Metadata;
+ import org.apache.tika.parser.ParseContext;
+ import org.apache.tika.parser.Parser;
++import org.apache.tika.parser.html.BoilerpipeContentHandler;
+ import org.w3c.dom.DocumentFragment;
++import org.xml.sax.ContentHandler;
+ 
+ /**
+  * Wrapper for Tika parsers. Mimics the HTMLParser but using the XHTML
