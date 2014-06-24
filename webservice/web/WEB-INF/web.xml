@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <servlet>
+    <servlet-name>Kirsten</servlet-name>
+    <servlet-class>kirsten.Service</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Kirsten</servlet-name>
+    <url-pattern>/service</url-pattern>
+  </servlet-mapping>
+  
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Update authenticated application</web-resource-name>
+      <url-pattern>/service</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>solr</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>Kirsten admin access</realm-name>
+  </login-config>
+
+</web-app>
