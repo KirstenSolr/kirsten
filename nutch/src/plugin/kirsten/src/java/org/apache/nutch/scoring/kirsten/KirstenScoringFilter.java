@@ -122,6 +122,7 @@ public class KirstenScoringFilter implements ScoringFilter {
       throws ScoringFilterException {
     open();
     String urlString = url.toString();
+
     String setBoost = readUrlBoostFromDB(url);
 
     // If a boost value is set we force this value as boost value when updating
@@ -172,7 +173,12 @@ public class KirstenScoringFilter implements ScoringFilter {
       try {
         resultSet.next();
         String boost = resultSet.getString("boost");
-        return boost;
+        if (resultSet.wasNull()) {
+          return "";
+        }
+        else {
+          return boost;
+        }
       }
       catch (SQLException e) {
         return "";
