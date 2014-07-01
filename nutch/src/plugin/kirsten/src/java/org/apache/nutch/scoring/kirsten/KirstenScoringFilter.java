@@ -122,23 +122,27 @@ public class KirstenScoringFilter implements ScoringFilter {
       throws ScoringFilterException {
     open();
     String urlString = url.toString();
-
     String setBoost = readUrlBoostFromDB(url);
+    float newBoost = 0;
 
     // If a boost value is set we force this value as boost value when updating
-    if (setBoost != "") {
+    if (setBoost != "" && setBoost != "0") {
       LOG.info("Boost: " + setBoost + " for " + urlString);
       // Return forced boost value
       close();
-      return Float.valueOf(setBoost);
+      newBoost = Float.valueOf(setBoost);
     }
     else {
       // Pass existing automatically calculated score on
       // But first check if any rules exists
       Float factoredBoost = readRuleBasedBoostFactorFromDB(url, parse);
       close();
-      return factoredBoost * initScore;
+      newBoost = factoredBoost * initScore;
     }
+    if (newBoost < 0.00001) {
+      newBoost = 0.00001f;
+    }
+    return newBoost;
   }
 
   /** Boilerplate */

@@ -20,6 +20,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +48,7 @@ public class MetaTagsParser implements HtmlParseFilter {
     // specify whether we want a specific subset of metadata
     // by default take everything we can find
     String metatags = conf.get("metatags.names", "*");
+   LOG.info("Metadata names: " + metatags);
     String[] values = metatags.split(";");
     for (String val : values)
       metatagset.add(val.toLowerCase());
@@ -77,15 +79,19 @@ public class MetaTagsParser implements HtmlParseFilter {
 
     Metadata generalMetaTags = metaTags.getGeneralTags();
     for (String tagName : generalMetaTags.names() ) {
-    String[] tagValues = generalMetaTags.getValues(tagName);    
+      // Avoid duplicates
+      if (!Arrays.asList(metadata.names()).contains(tagName)) {
+
+        String[] tagValues = generalMetaTags.getValues(tagName);    
   
-      for ( String tagValue : tagValues ) {
-      // check whether the name is in the list of what we want or if
-      // specified *
-    	 if (metatagset.contains("*") || metatagset.contains(tagName.toLowerCase())) {
-    		 LOG.debug("Found meta tag : " + tagName + "\t" + tagValue);
+        for ( String tagValue : tagValues ) {
+        // check whether the name is in the list of what we want or if
+        // specified *
+          if (metatagset.contains("*") || metatagset.contains(tagName.toLowerCase())) {
+    		 LOG.debug("Found general meta tag : " + tagName + "\t" + tagValue);
     		 metadata.add("metatag." + tagName.toLowerCase(), tagValue);
-    	 }
+          }
+    	}
       }
     }
 
@@ -97,7 +103,7 @@ public class MetaTagsParser implements HtmlParseFilter {
       // check whether the name is in the list of what we want or if
       // specified *
       if (metatagset.contains("*") || metatagset.contains(name.toLowerCase())) {
-        LOG.debug("Found meta tag : " + name + "\t" + value);
+        LOG.debug("Found HttpEquiv meta tag : " + name + "\t" + value);
         metadata.add("metatag." + name.toLowerCase(), value);
       }
     }

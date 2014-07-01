@@ -19,6 +19,7 @@ package org.apache.nutch.parse.tika;
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Map;
 
