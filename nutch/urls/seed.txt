@@ -40,6 +40,5 @@ http://www.danskbyggeskik.dk/search/all.action
 http://www.byggefilm.dk/
 http://www.byggefilm.dk/Bygningsdel
 http://www.danskebygningsmodeller.dk/
-http://www.danskbyggeskik.dk/search/all.action
 http://www.karch.dk/
 http://www.kaelderguiden.dk/
