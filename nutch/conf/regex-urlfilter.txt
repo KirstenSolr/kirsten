@@ -41,6 +41,9 @@
 +pdf\.id\=
 +action#\/
 
+# Block unwanted URLs
+-www\.sbi\.dk
+
 # skip URLs containing certain characters as probable queries, etc.
 -[?*!@=]
 
