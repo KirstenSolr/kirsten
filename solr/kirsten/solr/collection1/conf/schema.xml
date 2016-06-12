@@ -24,9 +24,8 @@
     http://svn.apache.org/viewvc/lucene/dev/trunk/solr/example/solr/conf/schema.xml?view=markup
     for more info.
 -->
-
-<schema name="nutch" version="1.5">
-
+<!-- Drupal Solr want it own ID here, was: <schema name="nutch" version="1.5"> -->
+<schema name="drupal-4.4-solr-4.x" version="1.3">
   <types>
 
     <!-- The StrField type is not analyzed, but indexed/stored verbatim. -->
@@ -513,7 +512,7 @@
     <!-- fields for index-basic plugin -->
     <field name="host" type="url" stored="false" indexed="true"/>
     <!-- stored=true for highlighting, use term vectors  and positions for fast highlighting -->
-    <field name="content" type="text_general" stored="true" indexed="true"/>
+    <field name="content" type="text_general" stored="true" indexed="true" termVectors="true" />
     <field name="title" type="text_general" stored="true" indexed="true"/>
     <field name="cache" type="string" stored="true" indexed="false"/>
     <field name="tstamp" type="date" stored="true" indexed="false"/>
@@ -562,11 +561,13 @@
     <field name="price" type="float" stored="true" indexed="false"/>
     <field name="status" type="boolean" indexed="true"  stored="true" multiValued="false"/>
 	
-    <!-- mandatory field -->	
-    <field name="_version_" type="long" indexed="true" stored="true"/>
-   
 
-    <!-- Drupal-specific fields -->
+    <!-- Add Solr Cloud version field as mentioned in
+         http://wiki.apache.org/solr/SolrCloud#Required_Config
+    -->
+    <field name="_version_" type="long" indexed="true" stored="true" multiValued="false"/>
+
+    <!-- Search Api specific fields -->
     <!-- item_id contains the entity ID, e.g. a node's nid. -->
     <field name="item_id"  type="string" indexed="true" stored="true" />
     <!-- index_id is the machine name of the search index this entry belongs to. -->
@@ -589,6 +590,7 @@
     <!-- The string version of the title is used for sorting -->
     <copyField source="label" dest="sort_label"/>
 
+    <!-- content is the default field for full text search - dump crap here -->
     <field name="teaser" type="text" indexed="false" stored="true"/>
     <field name="path" type="string" indexed="true" stored="true"/>
     <field name="path_alias" type="text" indexed="true" stored="true" termVectors="true" omitNorms="true"/>
